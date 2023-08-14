@@ -7,19 +7,20 @@ import webbrowser
 
 def scanQR():
    cap = cv2.VideoCapture(0)
-   detector=cv2.QRCodeDetector()
-   while True :
+   detector = cv2.QRCodeDetector()
+   while True:
        _, img = cap.read()
-       data,one, _=detector.detectAndDecode(img)
+       data, _, _ = detector.detectAndDecode(img)
        if data:
-           a=data
+           a = data
+           b = webbrowser.open(str(a))
            break
-       cv2.imshow('QRCode',img)
-       if cv2.waitKey(1)==('q'):
+       cv2.imshow('QRCode', img)
+       if cv2.waitKey(1) == 113:  # ASCII value of 'q'
            break
-   b=webbrowser.open(str(a))
-   cap.release(a)
-   cv2.destroyAllWindows
+   cap.release()
+   cv2.destroyAllWindows()
+
    
 
 ws = Tk()
