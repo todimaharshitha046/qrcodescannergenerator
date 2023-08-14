@@ -1,94 +1,42 @@
-from tkinter import *
-from tkinter import messagebox
+import streamlit as st
 import pyqrcode
 import cv2
 import webbrowser
 
+def scan_qr():
+    cap = cv2.VideoCapture(0)
+    detector = cv2.QRCodeDetector()
+    while True:
+        _, img = cap.read()
+        data, _, _ = detector.detectAndDecode(img)
+        if data:
+            cap.release()
+            cv2.destroyAllWindows()
+            return data
+        st.image(img, channels="BGR", use_column_width=True)
+        if cv2.waitKey(1) == 113:  # ASCII value of 'q'
+            break
 
-def scanQR():
-   cap = cv2.VideoCapture(0)
-   detector = cv2.QRCodeDetector()
-   while True:
-       _, img = cap.read()
-       data, _, _ = detector.detectAndDecode(img)
-       if data:
-           a = data
-           b = webbrowser.open(str(a))
-           break
-       cv2.imshow('QRCode', img)
-       if cv2.waitKey(1) == 113:  # ASCII value of 'q'
-           break
-   cap.release()
-   cv2.destroyAllWindows()
-
-   
-
-ws = Tk()
-ws.title('QR code Generator & Scanner')
-ws.geometry('500x500')
-ws.config(bg='#F3C5C5')
-
-
-Button(
-    ws,
-    text='Scan QRCode',
-    command=scanQR
-).pack(pady=10)
-
-
-
-
-def generate_QR():
-    if len(user_input.get())!=0 :
-        global qr,img
-        qr = pyqrcode.create(user_input.get())
-        img = BitmapImage(data = qr.xbm(scale=8))
+def generate_qr(text):
+    if len(text) != 0:
+        qr = pyqrcode.create(text)
+        st.image(qr.xbm(scale=8), channels="L", use_column_width=True)
+        st.write("QR code of " + text)
     else:
-        messagebox.showwarning('warning', 'All Fields are Required!')
-    try:
-        display_code()
-    except:
-        pass
+        st.warning('All Fields are Required!')
 
-def display_code():
-    img_lbl.config(image = img)
-    output.config(text="QR code of " + user_input.get())
+def main():
+    st.title('QR code Generator & Scanner')
 
+    action = st.radio("Choose Action", ["Generate QR Code", "Scan QR Code"])
 
-lbl = Label(
-    ws,
-    text="Enter message or URL",
-    bg='#C1A3A3'
-    )
-lbl.pack()
+    if action == "Generate QR Code":
+        user_input = st.text_input("Enter message or URL")
+        generate_qr(user_input)
+    elif action == "Scan QR Code":
+        data = scan_qr()
+        if data:
+            webbrowser.open(data)
 
-
-user_input = StringVar()
-entry = Entry(
-    ws,
-    textvariable = user_input
-    )
-entry.pack(padx=10)
-
-
-button = Button(
-    ws,
-    text = "Generate QR",
-    width=15,
-    command = generate_QR
-    )
-button.pack(pady=10)
-
-img_lbl = Label(
-    ws,
-    bg='#C1A3A3')
-img_lbl.pack()
-
-output = Label(
-    ws,
-    text="",
-    bg='#C1A3A3'
-    )
-output.pack()
-
-ws.mainloop()
+if __name__ == "__main__":
+    main()
